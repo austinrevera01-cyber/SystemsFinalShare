@@ -5,7 +5,6 @@ function [yaw_tf] = build_bicycle_model(params, Vel)
     b  = params.vehicle.b;
     Cf = params.vehicle.Cf;
     Cr = params.vehicle.Cr;
-
     s = tf('s');
 
     num = (a*Cf)*s + (Cf*Cr*(a+b))/(m*Vel);
