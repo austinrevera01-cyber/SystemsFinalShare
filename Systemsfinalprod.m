@@ -23,11 +23,11 @@ function params = default_parameters()
     params.vehicle.Kt   = 0.0259; 
 end
 
-opts.Vel                = get_option(opts, 'Vel', 8);
+opts.Vel                = get_option(opts, 'Vel', 15);
 opts.Ts                 = get_option(opts, 'Ts', 0.001);
 opts.id_duration        = get_option(opts, 'id_duration', 3.5);
 opts.id_voltage         = get_option(opts, 'id_voltage', 1);
-opts.test_duration      = get_option(opts, 'test_duration', 3);
+opts.test_duration      = get_option(opts, 'test_duration', 50);
 opts.multi_sine_freqs   = get_option(opts, 'multi_sine_freqs', [0.5 1 2 5]);
 opts.multi_sine_amp     = get_option(opts, 'multi_sine_amp', 1);
 
@@ -57,7 +57,7 @@ plot(p, 0 , 'X', 'MarkerSize',10, 'LineWidth',3);
 xlabel('Real'); ylabel('Imag');
 title('Poles / Eigenvalues'); grid on;
 
-figure('Name', 'Yaw Rate Comparison Vonstant Input');
+figure('Name', 'Yaw Rate Comparison Constant Input');
 plot(id_time, SS_values.yaw_rate, 'r', 'DisplayName', 'Yaw Rate'); hold on;
 step(const_voltage_to_yaw_model,opts.id_duration);
 grid on; xlabel('Time [s]'); ylabel('Yaw Rate [Rad/s]');
