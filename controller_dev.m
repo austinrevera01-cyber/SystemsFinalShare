@@ -67,16 +67,13 @@ function controller = controller_dev(params, velocity, SS_values, plot_opts)
 
     %% Closed-loop interconnections
     % 1) Inner steering loop: δ_ref -> δ
-    T_delta = feedback(C_delta*G_delta, 1);
+    T_delta = (C_delta*G_delta)/(1 + C_delta*G_delta);
 
     % 2) Yaw-rate loop: r_ref -> r (uses closed δ-loop as actuator)
-    L_r = C_r * G_rdelta * T_delta;
-    T_r = feedback(L_r, 1);
+    T_r = (T_delta * C_r * G_rdelta)/ (1 + T_delta * C_r * G_rdelta);
 
     % 3) Heading loop: ψ_ref -> ψ
-    G_psi_eff = T_r / s;             % r_ref -> ψ is yaw-loop then integrator
-    L_psi = C_psi * G_psi_eff;
-    T_psi = feedback(L_psi, 1);
+    T_psi = (T_r * C_psi * 1/s)/(1 + T_r * C_psi * 1/s);
 
     %% Test metrics (Part B requirements)
     controller.loops.delta.tf = minreal(T_delta);
