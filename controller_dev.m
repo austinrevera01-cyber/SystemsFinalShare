@@ -1,21 +1,5 @@
 function controller = controller_dev(params, velocity, SS_values, plot_opts)
-%CONTROLLER_DEV Design and evaluate cascaded yaw control loops (Part B).
-%   controller = CONTROLLER_DEV(params, velocity, SS_values, plot_opts)
-%   designs PI/PD gains for steering angle, yaw rate, and heading loops and
-%   exercises the closed-loop responses required for Part B of the project.
-%
-%   Inputs:
-%       params      - vehicle parameter struct (mass, geometry, cornering)
-%       velocity    - longitudinal velocity [m/s] used for linearization
-%       SS_values   - struct containing rack gain (K), inertia (Je),
-%                     viscous damping (Be) from identification
-%       plot_opts   - optional struct with logical fields:
-%                       .show_plots (default true)
-%                       .figure_prefix (string used to group figures)
-%
-%   Outputs:
-%       controller  - struct containing tuned gains, closed-loop transfer
-%                     functions, stability metrics, and steady-state tests
+
 
     if nargin < 4
         plot_opts = struct();
@@ -56,20 +40,18 @@ function controller = controller_dev(params, velocity, SS_values, plot_opts)
     D = ((C0*C2 - C1*m*velocity^2) - C1^2)/(Iz*m*velocity^2);
 
     % Inner steering loop (PI)
-    omega_n_delta = 4 / (zeta*TTS/6);
-    controller.Kp1 = (2*tau*omega_n_delta - 1) / K;
-    controller.Ki1 = (tau*omega_n_delta^2) / K;
+    omega_n_delta = 4 / (zeta*TTS);
+    controller.Kp1 = (Je * omega_n_delta^2);
+    controller.Kd1 = (Je*2*zeta*omega_n_delta - Be);
 
     % Yaw-rate loop (PD)
-    omega_n_r = 4 / (zeta*(TTS/3));
-    controller.Kp2 = -((-A*C*(omega_n_r^2) + 2*A*D*omega_n_r*zeta - B*D + B*(omega_n_r^2)) ...
-                       / ((A^2)*(omega_n_r^2) - 2*A*B*omega_n_r*zeta + B^2)) + 5;
-    controller.Kd2 = -((A*D - A*omega_n_r^2 - B*C + 2*B*omega_n_r*zeta) ...
-                       / ((A^2)*(omega_n_r^2) - 2*A*B*omega_n_r*zeta + B^2));
+    omega_n_r = 4 / (zeta*(TTS));
+    controller.Kp2 = omega_n_r^2 - B;
+    controller.Kd2 = 2*omega_n_r*zeta - A;
 
     % Heading loop (PI)
     omega_n_psi = 4 / (zeta*TTS);
-    controller.Kp3 = omega_n_psi*2*zeta + 2;
+    controller.Kp3 = omega_n_psi*2*zeta;
     controller.Ki3 = omega_n_psi^2;
 
     s = tf('s');
@@ -79,9 +61,9 @@ function controller = controller_dev(params, velocity, SS_values, plot_opts)
     G_rdelta = (A*s + B)/(s^2 + C*s + D);  % steering -> yaw rate
 
     % Controllers
-    C_delta = controller.Kp1 + controller.Ki1/s;    % inner PI (δ-loop)
-    C_r     = controller.Kp2 + controller.Kd2*s;    % yaw-rate PD
-    C_psi   = controller.Kp3 + controller.Ki3/s;    % outer PI (heading)
+    C_delta = (controller.Kp1 + controller.Kd1*s);    % inner PD (δ-loop)
+    C_r     = (controller.Kp2 + controller.Kd2*s);    % yaw-rate PD
+    C_psi   = (controller.Kp3*s + controller.Ki3);    % outer PI (heading)
 
     %% Closed-loop interconnections
     % 1) Inner steering loop: δ_ref -> δ

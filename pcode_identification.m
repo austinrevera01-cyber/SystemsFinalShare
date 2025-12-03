@@ -37,7 +37,7 @@ function SS_values = pcode_identification(voltage, time, opts, params)
     SS_values.tau = idx(1) * opts.Ts;
     SS_values.Be= params.gear.N*params.vehicle.Kt/SS_values.Be_multiplier;
     SS_values.Je = SS_values.tau*SS_values.Be;
-    SS_values.K = max(derivative) *SS_values.Je/SS_values.Be;
+    SS_values.K = params.vehicle.Kt  * params.gear.N  / SS_values.Be;
 
 
     % Plot the steering degree over time
